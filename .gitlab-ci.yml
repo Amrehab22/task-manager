@@ -14,12 +14,12 @@ build_backend:
   stage: build
   script:
     - echo "Building backend image..."
-    - docker build -t task-manager-backend ./backend
+    - docker build -t task-manager-backend -f backend/Dockerfile.backend backend 
 build_frontend:
   stage: build
   script:
     - echo "Building frontend image..."
-    - docker build -t task-manager-frontend ./frontend
+    - docker build -t task-manager-frontend -f frontend/Dockerfile.fronted fronted 
 test_backend:
   stage: test
   script:
