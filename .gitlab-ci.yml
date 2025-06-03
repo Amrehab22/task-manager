@@ -1,30 +1,25 @@
+---
 image: docker:latest
-
 services:
   - docker:dind
-
 stages:
   - build
   - test
   - scan
   - deploy
   - notify
-
 variables:
   DOCKER_DRIVER: overlay2
-
 build_backend:
   stage: build
   script:
     - echo "Building backend image..."
     - docker build -t task-manager-backend ./backend
-
 build_frontend:
   stage: build
   script:
     - echo "Building frontend image..."
     - docker build -t task-manager-frontend ./frontend
-
 test_backend:
   stage: test
   script:
@@ -32,7 +27,6 @@ test_backend:
     - pip3 install -r backend/requirements.txt
     - cd backend
     - pytest --cov=.
-
 test_frontend:
   stage: test
   script:
@@ -40,27 +34,23 @@ test_frontend:
     - cd frontend
     - npm install
     - npm test -- --coverage --watchAll=false
-
 sonarqube_scan:
   stage: scan
   script:
     - apk add --no-cache curl openjdk17
     - sonar-scanner -Dsonar.projectKey=task-manager-backend-flask \
-                    -Dsonar.sources=backend/ \
-                    -Dsonar.host.url=$SONAR_HOST_URL \
-                    -Dsonar.login=$SONAR_TOKEN
-
+      -Dsonar.sources=backend/ \ -Dsonar.host.url=$SONAR_HOST_URL \
+      -Dsonar.login=$SONAR_TOKEN
 deploy_staging:
   stage: deploy
   script:
     - apk add --no-cache ansible
     - echo "Deploying to staging server..."
     - ansible-playbook -i inventory/hosts staging.yml --ask-become-pass
-
 notify_slack:
   stage: notify
   script:
     - apk add --no-cache curl
-    - curl -X POST -H 'Content-type: application/json' \
-     --data '{"text":"Task Manager App pipeline has finished!"}' $SLACK_WEBHOOK_URL
+    - curl -X POST -H 'Content-type: application/json' \ --data '{"text":"Pipeline for
+        $CI_PROJECT_NAME has finished!"}' $SLACK_WEBHOOK_URL
   when: always
