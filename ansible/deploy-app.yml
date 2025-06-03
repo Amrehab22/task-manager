@@ -1,0 +1,17 @@
+---
+- name: Deploy Microservices App with Docker Compose
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Ensure Docker Compose is installed
+      command: docker compose version
+      register: docker_compose_version
+      failed_when: docker_compose_version.rc != 0
+      changed_when: false
+
+    - name: Pull and start Docker Compose services
+      community.docker.docker_compose:
+        project_src: /home/amr/Task-Manger-App
+        state: present
+        restarted: yes

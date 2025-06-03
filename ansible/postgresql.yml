@@ -1,0 +1,51 @@
+---
+- name: Install and configure PostgreSQL
+  hosts: localhost
+  become: yes
+  vars:
+    db_name: microservices_db
+    db_user: postgres
+    db_password: postgres
+    db_host: localhost
+    db_port: 5433
+
+  tasks:
+    - name: Update apt cache and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+      tags: update
+
+    - name: Install PostgreSQL package
+      apt:
+        name: postgresql
+        state: present
+      tags: install
+
+    - name: Ensure PostgreSQL service is running and enabled
+      service:
+        name: postgresql
+        state: started
+        enabled: yes
+      tags: service
+
+    - name: Create database "{{ db_name }}"
+      community.postgresql.postgresql_db:
+        name: "{{ db_name }}"
+        login_host: "{{ db_host }}"
+        login_port: "{{ db_port }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        state: present
+      tags: db
+
+    - name: Create PostgreSQL user "{{ db_user }}" with password
+      community.postgresql.postgresql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        login_host: "{{ db_host }}"
+        login_port: "{{ db_port }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        state: present
+      tags: user
